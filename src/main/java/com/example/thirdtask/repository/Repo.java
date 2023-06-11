@@ -1,12 +1,11 @@
 package com.example.thirdtask.repository;
 
-import com.example.thirdtask.config.DataSourceConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,21 +16,13 @@ import java.util.stream.Collectors;
 @Repository
 public class Repo {
 
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private final String scriptFileName = "product.sql";
-    private final String requestLine = read(scriptFileName);
+    @Autowired
+    NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final String requestLine = read("product.sql");
 
-    public Repo(DataSourceConfig cfg) {
-        DataSource source=cfg.getDataSource();
-        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(source);
-
-    }
-
-
-    public List<String> getProductName(String name){
-        MapSqlParameterSource parameters = new MapSqlParameterSource("name",name);
-        List<String> res = namedParameterJdbcTemplate.queryForList(requestLine,parameters,String.class);
-        return res;
+    public List<String> getProductName(String name) {
+        MapSqlParameterSource parameters = new MapSqlParameterSource("name", name);
+        return namedParameterJdbcTemplate.queryForList(requestLine, parameters, String.class);
     }
 
 
