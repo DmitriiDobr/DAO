@@ -17,3 +17,11 @@ CREATE TABLE ORDERS(
    FOREIGN KEY (customer_id) REFERENCES CUSTOMERS (id)
 
 );
+
+CREATE TABLE USERS(
+                       id  serial primary key,
+                       username varchar(255),
+                       password varchar(255),
+                       role varchar(255)
+
+);
