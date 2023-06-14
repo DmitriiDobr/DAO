@@ -2,50 +2,60 @@ package com.example.thirdtask.config;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
 import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig{
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
+
 
     @Autowired
-    DataSource dataSource;
+    UserDetailsService userDetailsService;
 
 
-    @Bean
-    public UserDetailsManager authenticateUsers(){
-        UserDetails user = User.withUsername("username").
-        password(PasswordEncoderFactories.createDelegatingPasswordEncoder().encode("password")).build();
-        JdbcUserDetailsManager users = new JdbcUserDetailsManager(dataSource);
-        users.setAuthoritiesByUsernameQuery("select username, password, enabled from users where username=?");
-        users.setUsersByUsernameQuery("select username, role from users where username=?");
-        users.createUser(user);
-        return users;
+    @Autowired
+    protected void configAuthentication(AuthenticationManagerBuilder auth) throws Exception {
+
+        auth.userDetailsService(userDetailsService);
+
+    }
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests().antMatchers("/admin").hasRole("ADMIN")
+                .antMatchers("/user").hasAnyRole("ADMIN","USER").
+                antMatchers("/").permitAll().and().formLogin();
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
-        http.formLogin(httpSecurityFormLoginConfigurer ->
-                httpSecurityFormLoginConfigurer.loginPage("/login").permitAll()).authorizeHttpRequests(
-                        authorizationManagerRequestMatcherRegistry ->authorizationManagerRequestMatcherRegistry.
-                                requestMatchers("/products/fetch-product").hasRole("write").
-                                anyRequest().authenticated() );
-
-        return http.build();
-    }
-
+    public PasswordEncoder getPasswordEncoder(){return NoOpPasswordEncoder.getInstance();}
 
 }
+
+
+
+
+
+
+

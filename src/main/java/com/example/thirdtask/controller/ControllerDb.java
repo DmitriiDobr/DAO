@@ -21,4 +21,18 @@ public class ControllerDb {
         return repo.getProductName(name);
     }
 
+    @GetMapping("/products")
+    public String getAllCustomers(){
+        return "all";
+    }
+
+    @GetMapping("/admin")
+    public String admin(){
+        return "Welcome admin!";
+    }
+
+    @GetMapping("/user")
+    public String user(){
+        return "Welcome user!";
+    }
 }
